@@ -22,6 +22,8 @@ public struct IsoEntry
 
     public IsoEntryStatus Status;
 
+    public bool IsInstalled;
+
     public IsoEntryOptions Options;
 
     public IsoEntry(IsoEntryPlatform Platform, string Path, string Destination, long Size, string TitleName, IsoEntryID ID, byte[] Thumb, IsoEntryOptions Options, string Message)

@@ -29,6 +29,7 @@ public class Main : Form
     private ToolStripSeparator toolStripSeparator1;
     private ToolStripButton toolStripButton3;
     private ToolStripButton toolStripButton4;
+    private ToolStripButton toolStripButton5;
     private CListView listView1;
     private StatusStrip statusStrip1;
     private ColumnHeader columnHeader1;
@@ -39,6 +40,7 @@ public class Main : Form
     private ColumnHeader columnHeader6;
     private ColumnHeader columnHeader7;
     private ColumnHeader columnHeader8;
+    private ColumnHeader columnHeader9;
     private Timer jobCheck;
     private ToolStripStatusLabel tsStatus;
     private Timer ftpCheck;
@@ -92,6 +94,7 @@ public class Main : Form
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader9 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader7 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader8 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.toolStrip1 = new Chilano.Common.ToolStripEx();
@@ -105,6 +108,7 @@ public class Main : Form
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripButton3 = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton4 = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButton5 = new System.Windows.Forms.ToolStripButton();
             this.cmQueue.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
@@ -182,6 +186,7 @@ public class Main : Form
             this.columnHeader4,
             this.columnHeader5,
             this.columnHeader6,
+            this.columnHeader9,
             this.columnHeader7,
             this.columnHeader8});
             this.listView1.ContextMenuStrip = this.cmQueue;
@@ -229,6 +234,12 @@ public class Main : Form
             this.columnHeader6.Text = "Padding";
             this.columnHeader6.Width = 65;
             // 
+            // columnHeader9
+            // 
+            this.columnHeader9.Text = "Installed";
+            this.columnHeader9.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.columnHeader9.Width = 60;
+            // 
             // columnHeader7
             // 
             this.columnHeader7.Text = "Progress";
@@ -237,7 +248,7 @@ public class Main : Form
             // columnHeader8
             // 
             this.columnHeader8.Text = "Status Message";
-            this.columnHeader8.Width = 414;
+            this.columnHeader8.Width = 354;
             // 
             // toolStrip1
             // 
@@ -255,7 +266,8 @@ public class Main : Form
             this.toolStripButton2,
             this.toolStripSeparator1,
             this.toolStripButton3,
-            this.toolStripButton4});
+            this.toolStripButton4,
+            this.toolStripButton5});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Padding = new System.Windows.Forms.Padding(0);
@@ -338,6 +350,21 @@ public class Main : Form
             this.toolStripButton2.Text = "Convert";
             this.toolStripButton2.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.toolStripButton2.Click += new System.EventHandler(this.toolStripButton2_Click);
+            // 
+            // toolStripButton5
+            // 
+            this.toolStripButton5.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.ImageAndText;
+            this.toolStripButton5.Image = global::Chilano_Iso2God_Properties_Resources.icon_hint;
+            this.toolStripButton5.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.toolStripButton5.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.toolStripButton5.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButton5.Margin = new System.Windows.Forms.Padding(5, 1, 0, 2);
+            this.toolStripButton5.Name = "toolStripButton5";
+            this.toolStripButton5.Padding = new System.Windows.Forms.Padding(5, 0, 0, 0);
+            this.toolStripButton5.Size = new System.Drawing.Size(95, 68);
+            this.toolStripButton5.Text = "FTP Games";
+            this.toolStripButton5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.toolStripButton5.Click += new System.EventHandler(this.toolStripButton5_Click);
             // 
             // toolStripSeparator1
             // 
@@ -514,6 +541,12 @@ public class Main : Form
     {
         using About about = new About();
         about.ShowDialog(this);
+    }
+
+    private void toolStripButton5_Click(object sender, EventArgs e)
+    {
+        using FtpGames ftpGames = new FtpGames();
+        ftpGames.ShowDialog(this);
     }
 
     private void ftpCheck_Tick(object sender, EventArgs e)
@@ -737,12 +770,13 @@ public class Main : Form
         double num = Math.Round((double)Entry.Size / 1073741824.0, 2);
         listViewItem.SubItems.Add(num + " GB");
         listViewItem.SubItems.Add(IsoEntryPaddingStr[(int)Entry.Options.Padding]);
+        listViewItem.SubItems.Add(Entry.IsInstalled ? "[X]" : "[ ]");
         listViewItem.SubItems.Add("");
         if(Entry.Message.Length == 0)  listViewItem.SubItems.Add(Entry.Path);
         else listViewItem.SubItems.Add(Entry.Message);
         listViewItem.Tag = Entry;
         listView1.Items.Add(listViewItem);
-        listView1.AddEmbeddedControl(new ProgressBar(), 6, listViewItem.Index);
+        listView1.AddEmbeddedControl(new ProgressBar(), 7, listViewItem.Index);
         long FreeSpace = 0L;
         UpdateSpace(out FreeSpace);
         if (FreeSpace < Entry.Size)
@@ -761,8 +795,9 @@ public class Main : Form
         listViewItem.SubItems[3].Text = Entry.ID.DiscNumber.ToString() + "/" + Entry.ID.DiscCount.ToString();
         double num = Math.Round((double)Entry.Size / 1073741824.0, 2);
         listViewItem.SubItems[4].Text = num + " GB";
-        listViewItem.SubItems[6].Text = IsoEntryPaddingStr[(int)Entry.Options.Padding];
-        listViewItem.SubItems[7].Text = Entry.Path;
+        listViewItem.SubItems[5].Text = IsoEntryPaddingStr[(int)Entry.Options.Padding];
+        listViewItem.SubItems[6].Text = Entry.IsInstalled ? "[X]" : "[ ]";
+        listViewItem.SubItems[8].Text = Entry.Path;
     }
 
     public string getVersion(bool build, bool revision)
@@ -976,15 +1011,15 @@ public class Main : Form
         string message = "";
         if (!File.Exists(file_listxbox))
         {
-            message += "• " + file_listxbox + " is missing, Xbox game titles will not be corrected.\n";
+            message += "ï¿½ " + file_listxbox + " is missing, Xbox game titles will not be corrected.\n";
         }
         if (!File.Exists(file_listxbox360))
         {
-            message += "• " + file_listxbox360 + " is missing, Xbox360 game titles will not be corrected.\n";
+            message += "ï¿½ " + file_listxbox360 + " is missing, Xbox360 game titles will not be corrected.\n";
         }
         if (!File.Exists(pathXT))
         {
-            message += "• " + file_xextool + " is missing, Xbox360 thumbnail extraction will not work.\n";
+            message += "ï¿½ " + file_xextool + " is missing, Xbox360 thumbnail extraction will not work.\n";
         }
 
         if (message != "")

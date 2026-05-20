@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Media;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Chilano.Iso2God;
@@ -79,6 +80,66 @@ public class AddISO : Form
     private ToolTip ttGodLayout;
     private ToolTip ttOutput;
     private int entryIndex;
+    private List<string> installedTitles = new List<string>();
+
+    private void checkInstalled()
+    {
+        string ip = Properties.Settings.Default["FtpIP"].ToString();
+        string user = Properties.Settings.Default["FtpUser"].ToString();
+        string pass = Properties.Settings.Default["FtpPass"].ToString();
+        string portStr = Properties.Settings.Default["FtpPort"].ToString();
+
+        if (string.IsNullOrEmpty(ip)) return;
+
+        int port = 21;
+        int.TryParse(portStr, out port);
+
+        Task.Run(() =>
+        {
+            try
+            {
+                EnterpriseDT.Net.Ftp.FTPConnection ftp = new EnterpriseDT.Net.Ftp.FTPConnection();
+                ftp.ServerAddress = ip;
+                ftp.ServerPort = port;
+                ftp.UserName = user;
+                ftp.Password = pass;
+                ftp.AutoLogin = true;
+                ftp.Connect();
+
+                string ftpPath = "Hdd1/Content/0000000000000000";
+                if (Properties.Settings.Default.FtpPathType == 0)
+                {
+                    switch (Properties.Settings.Default.FtpPathDefaults)
+                    {
+                        case 1: ftpPath = "Usb0/Content/0000000000000000"; break;
+                        case 2: ftpPath = "Usb1/Content/0000000000000000"; break;
+                    }
+                }
+                else
+                {
+                    ftpPath = Properties.Settings.Default["FtpPathCustom"].ToString();
+                }
+
+                ftp.ChangeWorkingDirectory(ftpPath);
+                EnterpriseDT.Net.Ftp.FTPFile[] files = ftp.GetFileInfos();
+                foreach (var file in files)
+                {
+                    if (file.Dir && file.Name.Length == 8)
+                    {
+                        installedTitles.Add(file.Name.ToUpper());
+                    }
+                }
+                ftp.Close();
+            }
+            catch { }
+        });
+    }
+
+    protected override void OnLoad(EventArgs e)
+    {
+        base.OnLoad(e);
+        checkInstalled();
+    }
 
     protected override void Dispose(bool disposing)
     {
@@ -1023,6 +1084,7 @@ public class AddISO : Form
                 IsoEntryID iD = new IsoEntryID(txtTitleID.Text, txtMediaID.Text, byte.Parse(txtDiscNum.Text), byte.Parse(txtDiscCount.Text), byte.Parse(txtPlatform.Text), byte.Parse(txtExType.Text));
                 FileInfo fileInfo = new FileInfo(txtISO.Text);
                 IsoEntry isoEntry = new IsoEntry(platform, txtISO.Text, txtDest.Text, fileInfo.Length, txtName.Text, iD, (byte[])pbThumb.Tag, isoEntryOptions, message);
+                isoEntry.IsInstalled = installedTitles.Contains(isoEntry.ID.TitleID.ToUpper());
                 if (edit)
                 {
                     (base.Owner as Main).UpdateISOEntry(entryIndex, isoEntry);
